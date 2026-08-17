@@ -12,7 +12,6 @@
       --bg: #0a0a0c;
       --card-bg: rgba(20, 20, 25, 0.8);
       --gold: #c5a059;
-      --gold-light: #e0c08d;
       --text-main: #e4e4e7;
       --text-dim: #a1a1aa;
       --border: rgba(197, 160, 89, 0.2);
@@ -34,11 +33,7 @@
 
     .container { max-width: 1200px; margin: 0 auto; }
 
-    .header {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-
+    .header { text-align: center; margin-bottom: 60px; }
     .header .logo {
       font-family: 'Cinzel', serif;
       font-size: 10px;
@@ -48,7 +43,6 @@
       margin-bottom: 10px;
       display: block;
     }
-
     .header h1 {
       font-family: 'Cinzel', serif;
       font-size: clamp(2rem, 5vw, 3.5rem);
@@ -56,10 +50,8 @@
       color: #fff;
       letter-spacing: -1px;
     }
-
     .header .divider {
-      width: 60px;
-      height: 2px;
+      width: 60px; height: 2px;
       background: var(--gold);
       margin: 20px auto;
     }
@@ -77,7 +69,6 @@
       border: 1px solid var(--border);
       border-radius: 2px;
       padding: 40px;
-      position: relative;
     }
 
     .card-label {
@@ -98,13 +89,11 @@
       transition: 0.3s;
       margin-bottom: 40px;
     }
-
     .upload-zone:hover,
     .upload-zone.dragover {
       background: rgba(197, 160, 89, 0.08);
       border-color: var(--gold);
     }
-
     .upload-zone .upload-text {
       display: block;
       font-size: 14px;
@@ -118,7 +107,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 25px;
     }
-
     .form-group { display: flex; flex-direction: column; }
     .full-width { grid-column: 1 / -1; }
 
@@ -142,10 +130,8 @@
       border-radius: 0;
       font-family: 'Inter', sans-serif;
     }
-
     input:focus, select:focus { border-bottom-color: var(--gold); }
     input:disabled { color: var(--gold); opacity: 0.8; }
-
     select option { background: #1a1a1f; color: #fff; }
 
     .display-box {
@@ -172,28 +158,18 @@
       transition: 0.4s;
       border-radius: 0;
     }
-
     .btn-gold {
       background: var(--gold);
       color: #000;
       border: 1px solid var(--gold);
     }
-
-    .btn-gold:hover {
-      background: transparent;
-      color: var(--gold);
-    }
-
+    .btn-gold:hover { background: transparent; color: var(--gold); }
     .btn-outline {
       background: transparent;
       color: var(--text-dim);
       border: 1px solid rgba(255,255,255,0.1);
     }
-
-    .btn-outline:hover {
-      border-color: var(--gold);
-      color: var(--gold);
-    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
     .preview-area {
       font-family: 'Inter', sans-serif;
@@ -206,7 +182,6 @@
       font-weight: 300;
       line-height: 2;
     }
-
     .preview-area::-webkit-scrollbar { width: 2px; }
     .preview-area::-webkit-scrollbar-thumb { background: var(--gold); }
 
@@ -231,7 +206,6 @@
       gap: 16px;
     }
     .modal.active { display: flex; }
-
     .spinner {
       width: 40px; height: 40px;
       border: 1px solid var(--gold);
@@ -239,7 +213,6 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
     .modal p {
       font-family: 'Cinzel', serif;
       font-size: 12px;
@@ -247,7 +220,6 @@
       color: var(--gold);
       text-transform: uppercase;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 900px) {
@@ -300,7 +272,7 @@
 
         <div class="form-group">
           <label>Category</label>
-          <select id="category" onchange="updatePreview()" disabled>
+          <select id="category" onchange="updatePreview()">
             <option value="Everyone">Everyone</option>
             <option value="Student">Student</option>
           </select>
@@ -333,16 +305,12 @@
 
         <div class="form-group full-width">
           <label>📱 Receiver Phone (Auto-Detected)</label>
-          <div class="display-box" id="billMobileNumberDisplay">
-            Upload PDF to detect...
-          </div>
+          <div class="display-box" id="billMobileNumberDisplay">Upload PDF to detect...</div>
         </div>
 
         <div class="form-group full-width">
           <label>SKU</label>
-          <div class="display-box">
-            It Will Be Taken Automatically When Product Part Code Is Selected.
-          </div>
+          <div class="display-box">It Will Be Taken Automatically When Product Part Code Is Selected.</div>
         </div>
 
       </div>
@@ -357,9 +325,7 @@
     <div class="card">
       <span class="card-label">03. WhatsApp Message</span>
 
-      <div class="phone-badge" id="detectedPhoneDisplay">
-        Upload PDF to detect receiver
-      </div>
+      <div class="phone-badge" id="detectedPhoneDisplay">Upload PDF to detect receiver</div>
 
       <div class="preview-area" id="messagePreview">Upload a tax invoice to see the WhatsApp message preview here...
 
@@ -380,7 +346,6 @@ The system will automatically extract:
   </div>
 </div>
 
-<!-- Processing Modal -->
 <div id="processingModal" class="modal">
   <div class="spinner"></div>
   <p>Extracting...</p>
@@ -399,24 +364,20 @@ The system will automatically extract:
   const pdfFile    = document.getElementById('pdfFile');
 
   uploadZone.addEventListener('click', () => pdfFile.click());
-
   uploadZone.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('dragover'); });
   uploadZone.addEventListener('dragover',  e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('dragover'); });
   uploadZone.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.remove('dragover'); });
   uploadZone.addEventListener('drop', e => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     uploadZone.classList.remove('dragover');
     const file = e.dataTransfer.files[0];
     if(file) handlePdfUpload(file);
   });
-
   pdfFile.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if(file) handlePdfUpload(file);
+    if(e.target.files[0]) handlePdfUpload(e.target.files[0]);
   });
 
-  /* ─── UPLOAD & PARSE ─── */
+  /* ─── PDF PARSE ─── */
   async function handlePdfUpload(file) {
     if(!file || file.type !== 'application/pdf') return;
     document.getElementById('processingModal').classList.add('active');
@@ -429,7 +390,9 @@ The system will automatically extract:
         const content = await page.getTextContent();
         fullText += content.items.map(it => it.str).join(' ') + ' ';
       }
+      console.log('RAW:', fullText);
       const extracted = extractInvoiceFields(fullText);
+      console.log('EXTRACTED:', extracted);
       storage.currentInvoice = extracted;
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
@@ -441,14 +404,14 @@ The system will automatically extract:
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════
      EXTRACTION ENGINE
-  ═══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════ */
   function extractInvoiceFields(rawText) {
     const data = {
       partnerState    : 'Maharashtra',
       partnerName     : 'Geonet It Mall Private Limited - Indira Chambers, Pune',
-      category        : 'Everyone', // ALWAYS Everyone by default
+      category        : 'Everyone',
       purchaseDate    : '',
       purchaseAmount  : '',
       serialNumber    : '',
@@ -458,14 +421,13 @@ The system will automatically extract:
       redemptionLink  : document.getElementById('redemptionLink').value.trim()
     };
 
-    /* Normalise all whitespace to single space */
     const text = rawText.replace(/\s+/g, ' ').trim();
 
     /* ── Invoice Number ── */
     const invM = text.match(/Invoice No\s*:\s*([A-Z0-9]+)/i);
     if(invM) data.invoiceNumber = invM[1].trim();
 
-    /* ── Invoice Date  dd-mm-yyyy ── */
+    /* ── Invoice Date dd-mm-yyyy ── */
     const dateM = text.match(/Invoice Date\s*:\s*(\d{2}-\d{2}-\d{4})/i);
     if(dateM) {
       const [d, m, y] = dateM[1].split('-');
@@ -477,84 +439,115 @@ The system will automatically extract:
     if(amtM) data.purchaseAmount = amtM[1].replace(/,/g,'').trim();
 
     /* ══════════════════════════════════════════════════════
-       PHONE NUMBER — ROOT CAUSE FIXED
-       
-       PDF text (normalised) looks like:
-       "...Details of Receiver | Billed to Details of
-       Consignee| Shipped to ... Phone No. : 9921947406
-       Phone No. : 9921947406 ..."
-       
-       Problem: Previous regex used "Details of Consignee"
-       as a STOP boundary — but it appears BEFORE the
-       phone number in the normalised text.
-       
-       Fix: Instead of slicing at Consignee, find the
-       FIRST "Phone No. :" that appears anywhere AFTER
-       the "Details of Receiver" keyword.
+       PHONE NUMBER
+       PDF line: "Phone No. : 9921947406"
+       Strategy 1 — after "Details of Receiver" keyword
+       Strategy 2 — any Phone No. with Indian mobile
+       Strategy 3 — absolute fallback
     ══════════════════════════════════════════════════════ */
-
-    // Strategy 1 ─ Find "Phone No. :" after "Details of Receiver"
     const receiverIdx = text.search(/Details of Receiver/i);
     if(receiverIdx !== -1) {
-      // Look in the 1000 chars after "Details of Receiver"
       const slice  = text.slice(receiverIdx, receiverIdx + 1000);
       const phoneM = slice.match(/Phone No\.\s*:\s*(\d{10})/i);
-      if(phoneM) {
-        data.billMobileNumber = '91' + phoneM[1];
+      if(phoneM) data.billMobileNumber = '91' + phoneM[1];
+    }
+    if(!data.billMobileNumber) {
+      for(const m of text.matchAll(/Phone No\.\s*:\s*(\d{10})/gi)) {
+        if(/^[6789]/.test(m[1])) { data.billMobileNumber = '91' + m[1]; break; }
+      }
+    }
+    if(!data.billMobileNumber) {
+      const fb = text.match(/\b([6789]\d{9})\b/);
+      if(fb) data.billMobileNumber = '91' + fb[1];
+    }
+
+    /* ══════════════════════════════════════════════════════
+       SERIAL NUMBER — DEFINITIVE FIX
+       
+       PDF row (after whitespace normalisation):
+       "1 C9LZ5PA#A HP 15-fd1444TU  5CD5377NJT , 84713010"
+       
+       Serial number rule:
+       ✦ Comes IMMEDIATELY after the HP model name
+       ✦ Is EXACTLY 10 characters
+       ✦ Is STRICTLY ALPHANUMERIC (letters + digits only)
+       ✦ Format like: 5CD5377NJT  (digits + letters mixed)
+       ✦ Must contain at LEAST 1 letter AND at LEAST 1 digit
+       ✦ Is followed by a space+comma OR just comma
+       
+       Part code rule:
+       ✦ Comes BEFORE #X  (e.g. C9LZ5PA#A)
+       ✦ Everything before # sign is the part code
+    ══════════════════════════════════════════════════════ */
+
+    /* ── Part Code: token immediately before #X ── */
+    const partM = text.match(/\b([A-Z0-9]{4,12})#[A-Z0-9]\b/i);
+    if(partM) data.partCode = partM[1].toUpperCase();
+
+    /* ── Serial Number ── 
+       Anchored strategy:
+       Find: [Part Code]#X  HP [Model]  [SERIAL_10]  ,
+       
+       The serial is the FIRST strictly alphanumeric 10-char
+       token that appears AFTER the HP model line and
+       BEFORE a comma followed by digits (HSN code).
+       
+       Strictly alphanumeric = [A-Z0-9]{10} with
+         ≥ 1 letter  AND  ≥ 1 digit
+    ── */
+
+    // Primary: Part code anchor → HP model → serial → comma
+    // Pattern: C9LZ5PA#A HP 15-fd1444TU  5CD5377NJT ,
+    const primarySerial = text.match(
+      /[A-Z0-9]{4,12}#[A-Z0-9]\s+HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i
+    );
+    if(primarySerial) {
+      const candidate = primarySerial[1].toUpperCase();
+      // Validate: strictly alphanumeric, has both letters and digits
+      if(isValidSerial(candidate)) {
+        data.serialNumber = candidate;
+        console.log('✅ Serial (primary anchor):', data.serialNumber);
       }
     }
 
-    // Strategy 2 ─ Any "Phone No. :" in full doc (not the seller's landline)
-    if(!data.billMobileNumber) {
-      // Seller phone is listed as "Phone No:" (no dot) or is a landline
-      // Receiver phone is "Phone No. :" with dot and is 10 digits starting 6-9
-      const allPhoneMatches = [...text.matchAll(/Phone No\.\s*:\s*(\d{10})/gi)];
-      for(const m of allPhoneMatches) {
-        if(/^[6789]/.test(m[1])) {          // Indian mobile starts 6-9
-          data.billMobileNumber = '91' + m[1];
+    // Fallback A: HP model → space → 10-char alphanumeric → comma
+    if(!data.serialNumber) {
+      const fbA = text.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
+      if(fbA) {
+        const candidate = fbA[1].toUpperCase();
+        if(isValidSerial(candidate)) {
+          data.serialNumber = candidate;
+          console.log('✅ Serial (fallback A):', data.serialNumber);
+        }
+      }
+    }
+
+    // Fallback B: Any strictly alphanumeric 10-char token
+    // that has ≥3 letters and ≥2 digits (strong serial signature)
+    if(!data.serialNumber) {
+      const all10 = [...text.matchAll(/\b([A-Z0-9]{10})\b/gi)];
+      for(const m of all10) {
+        const candidate = m[1].toUpperCase();
+        const letters = (candidate.match(/[A-Z]/g) || []).length;
+        const digits  = (candidate.match(/[0-9]/g) || []).length;
+        // Strong check: at least 3 letters and 3 digits
+        if(letters >= 3 && digits >= 3) {
+          data.serialNumber = candidate;
+          console.log('✅ Serial (fallback B):', data.serialNumber);
           break;
         }
       }
     }
 
-    // Strategy 3 ─ Absolute fallback: any 10-digit Indian mobile in document
-    if(!data.billMobileNumber) {
-      const fallback = text.match(/\b([6789]\d{9})\b/);
-      if(fallback) data.billMobileNumber = '91' + fallback[1];
-    }
-
-    /* ── Serial Number ── */
-    const SUFFIXES = '(?:TU|AU|AX|TX|QU|XU|LU|NU|SU|WU|HU|SX|NX)';
-    const serialRe  = new RegExp(
-      `HP\\s+[\\w\\-]*\\d{3,5}${SUFFIXES}\\s+([A-Z0-9]{10})(?:\\s*,|\\s+\\d)`, 'i'
-    );
-    const serialM = text.match(serialRe);
-    if(serialM) {
-      data.serialNumber = serialM[1].toUpperCase();
-    } else {
-      const fbA = text.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
-      if(fbA) data.serialNumber = fbA[1].toUpperCase();
-    }
-    if(!data.serialNumber) {
-      const tokens = text.match(/\b[A-Z0-9]{10}\b/gi) || [];
-      for(const tok of tokens) {
-        const u = tok.toUpperCase();
-        if((u.match(/[A-Z]/g)||[]).length >= 3 && (u.match(/\d/g)||[]).length >= 2) {
-          data.serialNumber = u; break;
-        }
-      }
-    }
-
-    /* ── Part Code ── */
-    const partM = text.match(/\b([A-Z0-9]{5,10})#[A-Z0-9]\s+HP\s+/i);
-    if(partM) {
-      data.partCode = partM[1].toUpperCase();
-    } else {
-      const partFb = text.match(/\b([A-Z0-9]{5,10})#[A-Z0-9]\b/i);
-      if(partFb) data.partCode = partFb[1].toUpperCase();
-    }
-
     return data;
+  }
+
+  /* ─── Serial validator: strictly alphanumeric, has both letters & digits ─── */
+  function isValidSerial(str) {
+    if(!/^[A-Z0-9]{10}$/.test(str)) return false;        // must be exactly 10 alphanumeric
+    if(!/[A-Z]/.test(str))           return false;        // must have at least 1 letter
+    if(!/[0-9]/.test(str))           return false;        // must have at least 1 digit
+    return true;
   }
 
   /* ─── POPULATE FORM ─── */
@@ -575,15 +568,15 @@ The system will automatically extract:
       phone || 'Not detected';
   }
 
-  /* ─── WHATSAPP MESSAGE ─── */
+  /* ─── FORMAT DATE ─── */
   function formatDate(dateStr) {
     if(!dateStr) return '';
-    const [y, m, d]  = dateStr.split('-');
-    const mn = ['Jan','Feb','Mar','Apr','May','Jun',
-                'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const [y, m, d] = dateStr.split('-');
+    const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return `${d}-${mn[parseInt(m,10)-1]}-${y}`;
   }
 
+  /* ─── BUILD WHATSAPP MESSAGE ─── */
   function buildWhatsAppMessage() {
     const link    = document.getElementById('redemptionLink').value.trim();
     const state   = document.getElementById('partnerState').value.trim();
@@ -605,7 +598,7 @@ Upload GST Certificate As Identity Proof When Tax Invoice On Firm Name.
 
 Partner State: ${state}
 Partner Name: ${partner}
-Category: ${cat || 'Not Selected'}
+Category: ${cat || 'Everyone'}
 Purchase Date: ${formatDate(date)}
 Purchase Amount: ${amount}
 Product Serial Number: ${serial}
@@ -649,7 +642,15 @@ SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
     document.getElementById('billMobileNumberDisplay').textContent = 'Upload PDF to detect...';
     document.getElementById('detectedPhoneDisplay').textContent    = 'Upload PDF to detect receiver';
     document.getElementById('messagePreview').textContent =
-      'Upload a tax invoice to see the WhatsApp message preview here...\n\nThe system will automatically extract:\n✓ Invoice Number\n✓ Serial Number\n✓ Purchase Date\n✓ Purchase Amount\n✓ Part Code\n✓ Receiver Phone Number';
+`Upload a tax invoice to see the WhatsApp message preview here...
+
+The system will automatically extract:
+✓ Invoice Number
+✓ Serial Number
+✓ Purchase Date
+✓ Purchase Amount
+✓ Part Code
+✓ Receiver Phone Number`;
   }
 
   function copyToClipboard() {
@@ -663,11 +664,10 @@ SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
   }
 
   window.addEventListener('load', () => {
+    document.getElementById('category').value = 'Everyone';
     if(storage.currentInvoice) {
       populateForm(storage.currentInvoice);
       updatePreview();
-    } else {
-      document.getElementById('category').value = 'Everyone';
     }
   });
 </script>
