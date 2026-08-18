@@ -6,226 +6,275 @@
   <title>Tax Invoice Extractor</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&display=swap');
 
     :root {
-      --bg: #0a0a0c;
-      --card-bg: rgba(20, 20, 25, 0.8);
-      --gold: #c5a059;
-      --text-main: #e4e4e7;
-      --text-dim: #a1a1aa;
-      --border: rgba(197, 160, 89, 0.2);
+      --white: #ffffff;
+      --bg: #f9fafb;
+      --border: #e5e7eb;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-tertiary: #9ca3af;
+      --emerald-primary: #059669;
+      --emerald-hover: #047857;
+      --emerald-light: #ecfdf5;
+      --emerald-border: #10b981;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background-color: var(--bg);
-      background-image:
-        radial-gradient(circle at 0% 0%, rgba(76, 29, 149, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 100% 100%, rgba(197, 160, 89, 0.05) 0%, transparent 40%);
-      color: var(--text-main);
+      color: var(--text-primary);
       min-height: 100vh;
-      padding: 40px 20px;
+      padding: 40px 16px;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .container { max-width: 1200px; margin: 0 auto; }
+    .container { max-width: 1400px; margin: 0 auto; }
 
-    .header { text-align: center; margin-bottom: 60px; }
+    .header {
+      text-align: center;
+      margin: -40px -16px 50px;
+      padding: 56px 24px 44px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+
     .header .logo {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 8px;
-      color: var(--gold);
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: var(--emerald-primary);
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
       display: block;
+      font-weight: 600;
     }
+
     .header h1 {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-family: 'Playfair Display', serif;
+      font-variant: small-caps;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
       font-weight: 700;
-      color: #fff;
-      letter-spacing: -1px;
+      color: var(--emerald-primary);
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+      line-height: 1.1;
     }
+
     .header .divider {
-      width: 60px; height: 2px;
-      background: var(--gold);
-      margin: 20px auto;
+      width: 64px;
+      height: 2px;
+      margin: 0 auto;
+      background: linear-gradient(90deg, transparent, var(--emerald-border), transparent);
     }
 
     .main-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 1.3fr 0.85fr;
       gap: 30px;
       align-items: start;
     }
 
     .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
+      background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 2px;
+      border-radius: 12px;
       padding: 40px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s ease;
     }
 
-    .card-label {
-      font-family: 'Cinzel', serif;
+    .card:hover { box-shadow: var(--shadow-md); }
+
+    .card-title {
+      font-family: 'Sora', sans-serif;
       font-size: 12px;
-      color: var(--gold);
-      letter-spacing: 3px;
+      letter-spacing: 2px;
+      color: var(--text-tertiary);
       text-transform: uppercase;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
       display: block;
+      font-weight: 700;
     }
 
     .upload-zone {
-      border: 1px dashed var(--border);
-      padding: 60px 20px;
+      border: 2px dashed var(--emerald-border);
+      border-radius: 10px;
+      padding: 60px 24px;
       text-align: center;
       cursor: pointer;
-      transition: 0.3s;
-      margin-bottom: 40px;
+      transition: all 0.2s ease;
+      margin-bottom: 35px;
+      background: var(--emerald-light);
     }
+
     .upload-zone:hover,
     .upload-zone.dragover {
-      background: rgba(197, 160, 89, 0.08);
-      border-color: var(--gold);
+      background: #d1fae5;
+      border-color: var(--emerald-hover);
+      transform: scale(1.01);
     }
-    .upload-zone .upload-text {
-      display: block;
-      font-size: 14px;
-      color: var(--text-dim);
-      font-weight: 300;
-      pointer-events: none;
+
+    .upload-zone-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--emerald-hover);
+      margin-bottom: 6px;
+    }
+
+    .upload-zone-hint {
+      font-size: 13px;
+      color: var(--text-secondary);
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 25px;
+      gap: 20px;
+      margin-bottom: 30px;
     }
+
     .form-group { display: flex; flex-direction: column; }
     .full-width { grid-column: 1 / -1; }
 
-    label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-dim);
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
       margin-bottom: 8px;
+      text-transform: uppercase;
+      font-family: 'Sora', sans-serif;
     }
 
     input, select {
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 0;
-      color: #fff;
-      font-size: 15px;
-      outline: none;
-      transition: 0.3s;
-      border-radius: 0;
       font-family: 'Inter', sans-serif;
-    }
-    input:focus, select:focus { border-bottom-color: var(--gold); }
-    input:disabled { color: var(--gold); opacity: 0.8; }
-    select option { background: #1a1a1f; color: #fff; }
-
-    .display-box {
       font-size: 14px;
-      color: var(--gold);
-      padding: 10px 0;
-      font-weight: 500;
+      color: var(--text-primary);
+      border: 1px solid var(--emerald-border);
+      border-radius: 8px;
+      padding: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+      background: var(--white);
     }
 
-    .btn-group {
+    input:focus, select:focus {
+      border-color: var(--emerald-hover);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+
+    input:disabled {
+      background: #f3f4f6;
+      border-color: var(--border);
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+    }
+
+    .display-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--emerald-primary);
+      padding: 10px 0;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .button-group {
       display: flex;
-      gap: 20px;
-      margin-top: 40px;
+      gap: 16px;
+      margin-top: 35px;
     }
 
     button {
       flex: 1;
-      padding: 15px;
-      font-family: 'Cinzel', serif;
-      font-size: 12px;
-      letter-spacing: 2px;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
       text-transform: uppercase;
+      padding: 14px 20px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: 0.4s;
-      border-radius: 0;
+      transition: all 0.2s ease;
+      border: none;
     }
-    .btn-gold {
-      background: var(--gold);
-      color: #000;
-      border: 1px solid var(--gold);
+
+    .btn-primary {
+      background: var(--emerald-primary);
+      color: var(--white);
     }
-    .btn-gold:hover { background: transparent; color: var(--gold); }
-    .btn-outline {
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid rgba(255,255,255,0.1);
+
+    .btn-primary:hover {
+      background: var(--emerald-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
     }
-    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--emerald-primary);
+      border: 2px solid var(--emerald-primary);
+    }
+
+    .btn-secondary:hover { background: var(--emerald-light); }
+
+    .phone-badge {
+      display: inline-flex;
+      padding: 8px 14px;
+      background: var(--emerald-light);
+      border: 1px solid var(--emerald-border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--emerald-hover);
+      margin-bottom: 16px;
+    }
 
     .preview-area {
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      white-space: pre-wrap;
-      color: var(--text-main);
-      height: 400px;
+      font-size: 13px;
+      line-height: 1.8;
+      background: #fdfdfd;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      height: 440px;
       overflow-y: auto;
-      padding-right: 10px;
-      font-weight: 300;
-      line-height: 2;
-    }
-    .preview-area::-webkit-scrollbar { width: 2px; }
-    .preview-area::-webkit-scrollbar-thumb { background: var(--gold); }
-
-    .phone-badge {
-      display: inline-block;
-      border: 1px solid var(--gold);
-      padding: 5px 15px;
-      font-size: 12px;
-      color: var(--gold);
-      margin-bottom: 20px;
+      white-space: pre-wrap;
     }
 
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
       z-index: 1000;
       flex-direction: column;
-      gap: 16px;
     }
+
     .modal.active { display: flex; }
+
     .spinner {
       width: 40px; height: 40px;
-      border: 1px solid var(--gold);
-      border-top-color: transparent;
+      border: 3px solid var(--white);
+      border-top-color: var(--emerald-primary);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
     }
-    .modal p {
-      font-family: 'Cinzel', serif;
-      font-size: 12px;
-      letter-spacing: 3px;
-      color: var(--gold);
-      text-transform: uppercase;
-    }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       .main-grid { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .btn-group { flex-direction: column; }
+      .card { padding: 30px; }
     }
   </style>
 </head>
@@ -233,425 +282,342 @@
 
 <div class="container">
   <div class="header">
-    <span class="logo">ABHISHEK RASAL'S</span>
+    <span class="logo">Abhishek Rasal's</span>
     <h1>Tax Invoice Extractor</h1>
     <div class="divider"></div>
   </div>
 
   <div class="main-grid">
-
-    <!-- LEFT CARD -->
     <div class="card">
-      <span class="card-label">01. Upload Tax Invoice</span>
-
+      <span class="card-title">01. Source File</span>
       <div class="upload-zone" id="uploadZone">
-        <span class="upload-text">📄 Click to upload or drag &amp; drop PDF here</span>
-        <input type="file" id="pdfFile" accept="application/pdf" style="display:none"/>
+        <div class="upload-zone-text">📄 DROP INVOICE HERE</div>
+        <div class="upload-zone-hint">PDF Files Only • Auto-Extraction Enabled</div>
+        <input type="file" id="pdfFile" accept="application/pdf" style="display: none;" />
       </div>
 
-      <span class="card-label">02. Review &amp; Edit Data</span>
-
+      <span class="card-title">02. Data Review</span>
       <div class="form-grid">
-
         <div class="form-group full-width">
-          <label>🔗 Redemption Link (Editable)</label>
-          <input type="text" id="redemptionLink"
-            value="https://www.redeemnow.in/hpbtcnote2026"
-            oninput="updatePreview()"/>
+          <label class="form-label">Redemption Link</label>
+          <input type="text" id="redemptionLink" value="https://www.redeemnow.in/hpbtcnote2026" oninput="updatePreview()" />
         </div>
-
         <div class="form-group">
-          <label>Partner State</label>
+          <label class="form-label">Partner State</label>
           <input type="text" id="partnerState" disabled />
         </div>
-
         <div class="form-group">
-          <label>Partner Name</label>
+          <label class="form-label">Partner Name</label>
           <input type="text" id="partnerName" disabled />
         </div>
-
         <div class="form-group">
-          <label>Category</label>
+          <label class="form-label">Category</label>
           <select id="category" onchange="updatePreview()">
             <option value="Everyone">Everyone</option>
             <option value="Student">Student</option>
           </select>
         </div>
-
         <div class="form-group">
-          <label>Purchase Date</label>
-          <input type="date" id="purchaseDate" oninput="updatePreview()"/>
+          <label class="form-label">Purchase Date</label>
+          <input type="date" id="purchaseDate" oninput="updatePreview()" />
         </div>
-
         <div class="form-group">
-          <label>Invoice Number</label>
-          <input type="text" id="invoiceNumber" oninput="updatePreview()"/>
+          <label class="form-label">Invoice Number</label>
+          <input type="text" id="invoiceNumber" oninput="updatePreview()" />
         </div>
-
         <div class="form-group">
-          <label>Purchase Amount</label>
-          <input type="number" id="purchaseAmount" step="0.01" oninput="updatePreview()"/>
+          <label class="form-label">Purchase Amount</label>
+          <input type="number" id="purchaseAmount" step="0.01" oninput="updatePreview()" />
         </div>
-
         <div class="form-group">
-          <label>Product Serial Number</label>
-          <input type="text" id="serialNumber" oninput="updatePreview()"/>
+          <label class="form-label">Serial Number</label>
+          <input type="text" id="serialNumber" oninput="updatePreview()" />
         </div>
-
         <div class="form-group">
-          <label>Product Part Code</label>
-          <input type="text" id="partCode" oninput="updatePreview()"/>
+          <label class="form-label">Part Code</label>
+          <input type="text" id="partCode" oninput="updatePreview()" />
         </div>
-
         <div class="form-group full-width">
-          <label>📱 Receiver Phone (Auto-Detected)</label>
-          <div class="display-box" id="billMobileNumberDisplay">Upload PDF to detect...</div>
+          <label class="form-label">Receiver Phone</label>
+          <div class="display-value" id="billMobileNumberDisplay">—</div>
         </div>
-
-        <div class="form-group full-width">
-          <label>SKU</label>
-          <div class="display-box">It Will Be Taken Automatically When Product Part Code Is Selected.</div>
-        </div>
-
       </div>
 
-      <div class="btn-group">
-        <button class="btn-gold"    onclick="saveExtractedData()">✓ Save &amp; Confirm</button>
-        <button class="btn-outline" onclick="clearForm()">🔄 Clear</button>
+      <div class="button-group">
+        <button class="btn-primary" onclick="saveExtractedData()">Save Changes</button>
+        <button class="btn-secondary" onclick="clearForm()">Reset Form</button>
       </div>
     </div>
 
-    <!-- RIGHT CARD -->
     <div class="card">
-      <span class="card-label">03. WhatsApp Message</span>
-
-      <div class="phone-badge" id="detectedPhoneDisplay">Upload PDF to detect receiver</div>
-
-      <div class="preview-area" id="messagePreview">Upload a tax invoice to see the WhatsApp message preview here...
-
-The system will automatically extract:
-✓ Invoice Number
-✓ Serial Number
-✓ Purchase Date
-✓ Purchase Amount
-✓ Part Code
-✓ Receiver Phone Number</div>
-
-      <div class="btn-group">
-        <button class="btn-gold"    onclick="sendWhatsApp()">💚 Send on WhatsApp</button>
-        <button class="btn-outline" onclick="copyToClipboard()">📋 Copy Message</button>
+      <span class="card-title">03. Message Preview</span>
+      <div class="phone-badge" id="detectedPhoneDisplay">📱 Waiting for PDF...</div>
+      <div class="preview-area" id="messagePreview">Complete the extraction to generate message...</div>
+      <div class="button-group">
+        <button class="btn-primary" onclick="sendWhatsApp()">Send On WhatsApp</button>
+        <button class="btn-secondary" onclick="copyToClipboard()">Copy Text</button>
       </div>
     </div>
-
   </div>
 </div>
 
 <div id="processingModal" class="modal">
   <div class="spinner"></div>
-  <p>Extracting...</p>
+  <div style="color: white; font-weight: 600;">Processing Invoice Data...</div>
 </div>
 
 <script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   const storage = {
     currentInvoice: JSON.parse(localStorage.getItem('currentInvoice')) || null
   };
 
-  /* ─── DRAG & DROP ─── */
   const uploadZone = document.getElementById('uploadZone');
-  const pdfFile    = document.getElementById('pdfFile');
+  const pdfFile = document.getElementById('pdfFile');
 
   uploadZone.addEventListener('click', () => pdfFile.click());
-  uploadZone.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('dragover'); });
-  uploadZone.addEventListener('dragover',  e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.add('dragover'); });
-  uploadZone.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); uploadZone.classList.remove('dragover'); });
+
+  ['dragenter', 'dragover'].forEach(e =>
+    uploadZone.addEventListener(e, ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      uploadZone.classList.add('dragover');
+    })
+  );
+
+  ['dragleave', 'drop'].forEach(e =>
+    uploadZone.addEventListener(e, ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      uploadZone.classList.remove('dragover');
+    })
+  );
+
   uploadZone.addEventListener('drop', e => {
-    e.preventDefault(); e.stopPropagation();
-    uploadZone.classList.remove('dragover');
     const file = e.dataTransfer.files[0];
-    if(file) handlePdfUpload(file);
-  });
-  pdfFile.addEventListener('change', e => {
-    if(e.target.files[0]) handlePdfUpload(e.target.files[0]);
+    if (file) handlePdfUpload(file);
   });
 
-  /* ─── PDF PARSE ─── */
+  pdfFile.addEventListener('change', e => {
+    if (e.target.files[0]) handlePdfUpload(e.target.files[0]);
+  });
+
   async function handlePdfUpload(file) {
-    if(!file || file.type !== 'application/pdf') return;
+    if (!file || file.type !== 'application/pdf') return;
+
     document.getElementById('processingModal').classList.add('active');
+
     try {
       const buf = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument(buf).promise;
 
-      /* ── Collect raw items WITH positions ── */
       let rawItems = [];
-      for(let i = 1; i <= pdf.numPages; i++) {
-        const page    = await pdf.getPage(i);
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
         const content = await page.getTextContent();
         rawItems = rawItems.concat(content.items);
       }
 
-      /* ── Build TWO versions of full text ── */
-      /* Version 1: space-joined (for most fields) */
       const fullText = rawItems.map(it => it.str).join(' ');
-
-      /* Version 2: reconstruct WITH the # re-joined
-         PDF.js sometimes splits "C9LZ5PA#A" + "CJ" into two tokens
-         We merge adjacent tokens that look like a broken part code  */
       const rejoined = rejoinPartCodeTokens(rawItems);
-
-      console.log('RAW TEXT:', fullText);
-      console.log('REJOINED:', rejoined);
-
       const extracted = extractInvoiceFields(fullText, rejoined);
-      console.log('EXTRACTED:', extracted);
 
       storage.currentInvoice = extracted;
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
       updatePreview();
-    } catch(err) {
-      console.error('PDF Error:', err);
+    } catch (err) {
+      console.error(err);
     } finally {
       document.getElementById('processingModal').classList.remove('active');
     }
   }
 
-  /* ══════════════════════════════════════════════════════
-     REJOIN SPLIT PART-CODE TOKENS
-     
-     PDF.js splits "C9LZ5PA#ACJ" into tokens like:
-       ["C9LZ5PA#A", "CJ"]  OR  ["C9LZ5PA#", "ACJ"]
-     
-     This function detects a token ending with # or containing #
-     and merges it with the very next token if needed so we get
-     the complete "C9LZ5PA#ACJ" in the text stream.
-  ══════════════════════════════════════════════════════ */
   function rejoinPartCodeTokens(items) {
     const strs = items.map(it => it.str);
-    const out  = [];
+    const out = [];
     let i = 0;
-    while(i < strs.length) {
+
+    while (i < strs.length) {
       const tok = strs[i];
-      /* Case 1: token ends with #  → merge with next token */
-      if(tok.match(/#$/) && i + 1 < strs.length) {
-        out.push(tok + strs[i+1]);
+
+      if (tok.match(/#$/) && i + 1 < strs.length) {
+        out.push(tok + strs[i + 1]);
         i += 2;
         continue;
       }
-      /* Case 2: token contains # but next token is pure letters
-         e.g. "C9LZ5PA#A" + "CJ"  → merge into "C9LZ5PA#ACJ"    */
-      if(tok.includes('#') && i + 1 < strs.length) {
-        const next = strs[i+1].trim();
-        if(/^[A-Z]{1,4}$/i.test(next)) {
+
+      if (tok.includes('#') && i + 1 < strs.length) {
+        const next = strs[i + 1].trim();
+        if (/^[A-Z]{1,4}$/i.test(next)) {
           out.push(tok + next);
           i += 2;
           continue;
         }
       }
+
       out.push(tok);
       i++;
     }
+
     return out.join(' ');
   }
 
-  /* ══════════════════════════════════════════════════════
-     EXTRACTION ENGINE
-  ══════════════════════════════════════════════════════ */
   function extractInvoiceFields(text, rejoined) {
-
-    /* normalise both */
-    text     = text.replace(/\s+/g, ' ').trim();
+    text = text.replace(/\s+/g, ' ').trim();
     rejoined = rejoined.replace(/\s+/g, ' ').trim();
 
     const data = {
-      partnerState    : 'Maharashtra',
-      partnerName     : 'Geonet It Mall Private Limited - Indira Chambers, Pune',
-      category        : 'Everyone',
-      purchaseDate    : '',
-      purchaseAmount  : '',
-      serialNumber    : '',
-      invoiceNumber   : '',
-      partCode        : '',
+      partnerState: 'Maharashtra',
+      partnerName: 'Geonet It Mall Private Limited - Indira Chambers, Pune',
+      category: 'Everyone',
+      purchaseDate: '',
+      purchaseAmount: '',
+      serialNumber: '',
+      invoiceNumber: '',
+      partCode: '',
       billMobileNumber: '',
-      redemptionLink  : document.getElementById('redemptionLink').value.trim()
+      redemptionLink: document.getElementById('redemptionLink').value.trim()
     };
 
-    /* ── Invoice Number ── */
-    const invM = text.match(/Invoice No\s*:\s*([A-Z0-9]+)/i);
-    if(invM) data.invoiceNumber = invM[1].trim();
+    const invM = text.match(/Invoice No\s*:\s*([A-Z0-9\-\/]+)/i);
+    if (invM) data.invoiceNumber = invM[1].trim();
 
-    /* ── Invoice Date dd-mm-yyyy ── */
     const dateM = text.match(/Invoice Date\s*:\s*(\d{2}-\d{2}-\d{4})/i);
-    if(dateM) {
+    if (dateM) {
       const [d, m, y] = dateM[1].split('-');
       data.purchaseDate = `${y}-${m}-${d}`;
     }
 
-    /* ── Total Amount ── */
     const amtM = text.match(/Total Amount\s*:\s*([\d,]+(?:\.\d{1,2})?)/i);
-    if(amtM) data.purchaseAmount = amtM[1].replace(/,/g,'').trim();
+    if (amtM) data.purchaseAmount = amtM[1].replace(/,/g, '').trim();
 
-    /* ── Phone Number ── */
-    const receiverIdx = text.search(/Details of Receiver/i);
-    if(receiverIdx !== -1) {
-      const slice  = text.slice(receiverIdx, receiverIdx + 1000);
-      const phoneM = slice.match(/Phone No\.\s*:\s*(\d{10})/i);
-      if(phoneM) data.billMobileNumber = '91' + phoneM[1];
-    }
-    if(!data.billMobileNumber) {
-      for(const m of text.matchAll(/Phone No\.\s*:\s*(\d{10})/gi)) {
-        if(/^[6789]/.test(m[1])) { data.billMobileNumber = '91' + m[1]; break; }
-      }
-    }
-    if(!data.billMobileNumber) {
-      const fb = text.match(/\b([6789]\d{9})\b/);
-      if(fb) data.billMobileNumber = '91' + fb[1];
-    }
+    /* PART CODE */
+    const pcM =
+      rejoined.match(/SR\.?\s*No\.?\s*1\s+([A-Z0-9]{4,20})#[A-Z]{1,5}/i) ||
+      rejoined.match(/\b([A-Z0-9]{4,20})#[A-Z]{1,5}\b/i);
+    if (pcM) data.partCode = pcM[1].toUpperCase();
 
-    /* ══════════════════════════════════════════════════════
-       PART CODE — DEFINITIVE FIX
-       
-       Invoice table row (SR. No = 1):
-       "1  C9LZ5PA#ACJ  HP 15-fd1444TU  5CD5377NJT , 84713010"
-            ───────
-            Item Code = C9LZ5PA  (everything BEFORE the #)
-       
-       The PDF splits this as:
-         token1: "C9LZ5PA#A"
-         token2: "CJ"
-       
-       After rejoinPartCodeTokens() we have:
-         "C9LZ5PA#ACJ"
-       
-       Rule: find the FIRST occurrence of [ALPHANUMERIC]+#[A-Z]+
-       after "SR." or after the item row start marker "1 "
-       and extract everything BEFORE the #
-    ══════════════════════════════════════════════════════ */
+    /* SERIAL NUMBER FIX
+       Rule:
+       - under SR. NO. 1 row
+       - in Name of Product/Service
+       - after model suffix TU, AU, QU, TX, AX
+       Example:
+       1 C9LZ5PA#ACJ HP 15-fd1444TU 5CD5377NJT , 84713010
+    */
+    const suffixes = '(?:TU|AU|QU|TX|AX|LU|HU|SX|NX|WU|SU|XU|NU)';
+    const serialPatterns = [
+      new RegExp(`SR\\.?\\s*No\\.?\\s*1[\\s\\S]{0,250}?HP\\s+[\\w\\-\\/]*${suffixes}\\s+([A-Z0-9]{10})(?=\\s*,|\\s+\\d{6,})`, 'i'),
+      new RegExp(`HP\\s+[\\w\\-\\/]*${suffixes}\\s+([A-Z0-9]{10})(?=\\s*,|\\s+\\d{6,})`, 'i'),
+      new RegExp(`${suffixes}\\s+([A-Z0-9]{10})(?=\\s*,|\\s+\\d{6,})`, 'i')
+    ];
 
-    /* Strategy 1 — use rejoined text: find pattern after SR. row */
-    const srRowMatch = rejoined.match(
-      /SR\.?\s*(?:No\.?)?\s*\d+\s+([A-Z0-9]+)#[A-Z]+/i
-    );
-    if(srRowMatch) {
-      data.partCode = srRowMatch[1].toUpperCase();
-      console.log('✅ Part Code (SR row - rejoined):', data.partCode);
-    }
-
-    /* Strategy 2 — rejoined text: any [ALNUM]+#[LETTERS] near HP */
-    if(!data.partCode) {
-      const nearHP = rejoined.match(/([A-Z0-9]{4,12})#[A-Z]+\s+HP\s+/i);
-      if(nearHP) {
-        data.partCode = nearHP[1].toUpperCase();
-        console.log('✅ Part Code (near HP - rejoined):', data.partCode);
+    for (const pattern of serialPatterns) {
+      const m = rejoined.match(pattern) || text.match(pattern);
+      if (m && isValidSerial(m[1])) {
+        data.serialNumber = m[1].toUpperCase();
+        break;
       }
     }
 
-    /* Strategy 3 — rejoined text: very first [ALNUM]+#[LETTERS] in doc */
-    if(!data.partCode) {
-      const anyHash = rejoined.match(/\b([A-Z0-9]{4,12})#[A-Z]{1,5}\b/i);
-      if(anyHash) {
-        data.partCode = anyHash[1].toUpperCase();
-        console.log('✅ Part Code (first hash token - rejoined):', data.partCode);
-      }
-    }
-
-    /* Strategy 4 — plain text fallback (handles single-char suffix like #A) */
-    if(!data.partCode) {
-      const plainHash = text.match(/\b([A-Z0-9]{4,12})#[A-Z]{1,5}\b/i);
-      if(plainHash) {
-        data.partCode = plainHash[1].toUpperCase();
-        console.log('✅ Part Code (plain text fallback):', data.partCode);
-      }
-    }
-
-    /* ══════════════════════════════════════════════════════
-       SERIAL NUMBER
-       
-       Row: "1 C9LZ5PA#ACJ HP 15-fd1444TU  5CD5377NJT , 84713010"
-       
-       Serial = strictly alphanumeric 10-char token
-       AFTER the HP model name, BEFORE the comma
-    ══════════════════════════════════════════════════════ */
-
-    /* Primary: HP model → 10-char → comma */
-    const serialPrimary = rejoined.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
-    if(serialPrimary && isValidSerial(serialPrimary[1])) {
-      data.serialNumber = serialPrimary[1].toUpperCase();
-      console.log('✅ Serial (primary):', data.serialNumber);
-    }
-
-    /* Fallback A: plain text same pattern */
-    if(!data.serialNumber) {
-      const fbA = text.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
-      if(fbA && isValidSerial(fbA[1])) {
-        data.serialNumber = fbA[1].toUpperCase();
-        console.log('✅ Serial (fallback A):', data.serialNumber);
-      }
-    }
-
-    /* Fallback B: any 10-char with ≥3 letters + ≥3 digits */
-    if(!data.serialNumber) {
-      for(const m of text.matchAll(/\b([A-Z0-9]{10})\b/gi)) {
-        const u = m[1].toUpperCase();
-        if((u.match(/[A-Z]/g)||[]).length >= 3 && (u.match(/[0-9]/g)||[]).length >= 3) {
-          data.serialNumber = u;
-          console.log('✅ Serial (fallback B):', data.serialNumber);
+    if (!data.serialNumber) {
+      const allTokens = [...rejoined.matchAll(/\b([A-Z0-9]{10})\b/gi)];
+      for (const m of allTokens) {
+        const token = m[1].toUpperCase();
+        const letters = (token.match(/[A-Z]/g) || []).length;
+        const digits = (token.match(/[0-9]/g) || []).length;
+        if (letters >= 3 && digits >= 3) {
+          data.serialNumber = token;
           break;
         }
       }
     }
 
+    /* MOBILE NUMBER FIX
+       Rule:
+       - locate the "Details of Receiver" / "Billed to" section specifically
+         (never "Details of Consignee" / "Shipped to" / "Sold by", which can
+         carry a different, unrelated phone number on the same invoice)
+       - pull the first valid Indian mobile number that appears inside that
+         section only
+    */
+    let foundPhone = '';
+
+    const receiverAnchor = /Details of Receiver|Billed to/i.exec(text);
+    if (receiverAnchor) {
+      const sectionStart = receiverAnchor.index + receiverAnchor[0].length;
+
+      // Stop at the next section heading so we don't drift into
+      // "Details of Consignee" / "Shipped to" / item-table text.
+      const nextSectionRe = /Details of Consignee|Shipped to|Sold by|Description of Goods|Sr\.?\s*No\.?/i;
+      const rest = text.slice(sectionStart);
+      const nextMatch = nextSectionRe.exec(rest);
+      const section = nextMatch ? rest.slice(0, nextMatch.index) : rest.slice(0, 1200);
+
+      const phoneInSection =
+        section.match(/Phone No\.?\s*:?\s*(\d{10})/i) ||
+        section.match(/\b([6-9]\d{9})\b/);
+
+      if (phoneInSection && /^[6-9]\d{9}$/.test(phoneInSection[1])) {
+        foundPhone = phoneInSection[1];
+      }
+    }
+
+    // Fallback: any labelled "Phone No :" anywhere in the invoice.
+    if (!foundPhone) {
+      const anyPhone = [...text.matchAll(/Phone No\.?\s*:?\s*(\d{10})/gi)]
+        .map(m => m[1])
+        .find(p => /^[6-9]\d{9}$/.test(p));
+      if (anyPhone) foundPhone = anyPhone;
+    }
+
+    // Last resort: any 10-digit Indian mobile-looking number in the document.
+    if (!foundPhone) {
+      const fallbackPhones = text.match(/\b[6-9]\d{9}\b/g) || [];
+      if (fallbackPhones.length) foundPhone = fallbackPhones[0];
+    }
+
+    if (foundPhone) data.billMobileNumber = '91' + foundPhone;
+
     return data;
   }
 
-  /* ─── Serial validator ─── */
-  function isValidSerial(str) {
-    const u = str.toUpperCase();
+  function isValidSerial(s) {
+    const u = s.toUpperCase();
     return /^[A-Z0-9]{10}$/.test(u) && /[A-Z]/.test(u) && /[0-9]/.test(u);
   }
 
-  /* ─── POPULATE FORM ─── */
-  function populateForm(data) {
-    document.getElementById('partnerState').value    = data.partnerState    || '';
-    document.getElementById('partnerName').value     = data.partnerName     || '';
-    document.getElementById('category').value        = data.category        || 'Everyone';
-    document.getElementById('purchaseDate').value    = data.purchaseDate    || '';
-    document.getElementById('purchaseAmount').value  = data.purchaseAmount  || '';
-    document.getElementById('serialNumber').value    = data.serialNumber    || '';
-    document.getElementById('invoiceNumber').value   = data.invoiceNumber   || '';
-    document.getElementById('partCode').value        = data.partCode        || '';
+  function populateForm(d) {
+    document.getElementById('partnerState').value = d.partnerState || '';
+    document.getElementById('partnerName').value = d.partnerName || '';
+    document.getElementById('category').value = d.category || 'Everyone';
+    document.getElementById('purchaseDate').value = d.purchaseDate || '';
+    document.getElementById('purchaseAmount').value = d.purchaseAmount || '';
+    document.getElementById('serialNumber').value = d.serialNumber || '';
+    document.getElementById('invoiceNumber').value = d.invoiceNumber || '';
+    document.getElementById('partCode').value = d.partCode || '';
 
-    const phone = data.billMobileNumber || '';
     document.getElementById('billMobileNumberDisplay').textContent =
-      phone ? '📱 ' + phone : 'Not detected — check invoice';
+      d.billMobileNumber ? '📱 ' + d.billMobileNumber : '—';
+
     document.getElementById('detectedPhoneDisplay').textContent =
-      phone || 'Not detected';
+      d.billMobileNumber ? '📱 ' + d.billMobileNumber : '📱 Waiting for PDF...';
   }
 
-  /* ─── FORMAT DATE ─── */
-  function formatDate(dateStr) {
-    if(!dateStr) return '';
-    const [y, m, d] = dateStr.split('-');
+  function formatDate(s) {
+    if (!s) return '';
+    const [y, m, d] = s.split('-');
     const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return `${d}-${mn[parseInt(m,10)-1]}-${y}`;
   }
 
-  /* ─── BUILD WHATSAPP MESSAGE ─── */
   function buildWhatsAppMessage() {
-    const link    = document.getElementById('redemptionLink').value.trim();
-    const state   = document.getElementById('partnerState').value.trim();
-    const partner = document.getElementById('partnerName').value.trim();
-    const cat     = document.getElementById('category').value.trim();
-    const date    = document.getElementById('purchaseDate').value;
-    const amount  = document.getElementById('purchaseAmount').value.trim();
-    const serial  = document.getElementById('serialNumber').value.trim();
-    const invNo   = document.getElementById('invoiceNumber').value.trim();
-    const part    = document.getElementById('partCode').value.trim();
+    const vals = ['redemptionLink', 'partnerState', 'partnerName', 'category', 'purchaseDate', 'purchaseAmount', 'serialNumber', 'invoiceNumber', 'partCode']
+      .map(id => document.getElementById(id).value.trim());
 
-    return `${link}
+    return `${vals[0]}
 
 Please Fill Following Details On Site Under 14 Days From Purchase Date.
 
@@ -659,14 +625,14 @@ Select Student Category Only When Bill Name Person Have Student ID Of Current Ye
 
 Upload GST Certificate As Identity Proof When Tax Invoice On Firm Name.
 
-Partner State: ${state}
-Partner Name: ${partner}
-Category: ${cat || 'Everyone'}
-Purchase Date: ${formatDate(date)}
-Purchase Amount: ${amount}
-Product Serial Number: ${serial}
-Invoice Number: ${invNo}
-Product Part Code: ${part}
+Partner State: ${vals[1]}
+Partner Name: ${vals[2]}
+Category: ${vals[3]}
+Purchase Date: ${formatDate(vals[4])}
+Purchase Amount: ${vals[5]}
+Product Serial Number: ${vals[6]}
+Invoice Number: ${vals[7]}
+Product Part Code: ${vals[8]}
 SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
   }
 
@@ -675,45 +641,33 @@ SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
   }
 
   function saveExtractedData() {
-    const data = {
-      partnerState    : document.getElementById('partnerState').value.trim(),
-      partnerName     : document.getElementById('partnerName').value.trim(),
-      category        : document.getElementById('category').value.trim(),
-      purchaseDate    : document.getElementById('purchaseDate').value,
-      purchaseAmount  : document.getElementById('purchaseAmount').value.trim(),
-      serialNumber    : document.getElementById('serialNumber').value.trim(),
-      invoiceNumber   : document.getElementById('invoiceNumber').value.trim(),
-      partCode        : document.getElementById('partCode').value.trim(),
-      billMobileNumber: storage.currentInvoice?.billMobileNumber || '',
-      redemptionLink  : document.getElementById('redemptionLink').value.trim(),
-      timestamp       : new Date().toISOString()
+    storage.currentInvoice = {
+      ...storage.currentInvoice,
+      partnerState: document.getElementById('partnerState').value.trim(),
+      partnerName: document.getElementById('partnerName').value.trim(),
+      category: document.getElementById('category').value.trim(),
+      purchaseDate: document.getElementById('purchaseDate').value,
+      purchaseAmount: document.getElementById('purchaseAmount').value.trim(),
+      serialNumber: document.getElementById('serialNumber').value.trim(),
+      invoiceNumber: document.getElementById('invoiceNumber').value.trim(),
+      partCode: document.getElementById('partCode').value.trim(),
+      redemptionLink: document.getElementById('redemptionLink').value.trim()
     };
-    storage.currentInvoice = data;
-    localStorage.setItem('currentInvoice', JSON.stringify(data));
+    localStorage.setItem('currentInvoice', JSON.stringify(storage.currentInvoice));
     updatePreview();
   }
 
   function clearForm() {
-    ['partnerState','partnerName','purchaseDate','purchaseAmount',
-     'serialNumber','invoiceNumber','partCode'].forEach(id => {
+    ['partnerState','partnerName','purchaseDate','purchaseAmount','serialNumber','invoiceNumber','partCode'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('category').value = 'Everyone';
-    document.getElementById('pdfFile').value  = '';
+    document.getElementById('billMobileNumberDisplay').textContent = '—';
+    document.getElementById('detectedPhoneDisplay').textContent = '📱 Waiting for PDF...';
+    document.getElementById('messagePreview').textContent = 'Complete the extraction to generate message...';
     storage.currentInvoice = null;
     localStorage.removeItem('currentInvoice');
-    document.getElementById('billMobileNumberDisplay').textContent = 'Upload PDF to detect...';
-    document.getElementById('detectedPhoneDisplay').textContent    = 'Upload PDF to detect receiver';
-    document.getElementById('messagePreview').textContent =
-`Upload a tax invoice to see the WhatsApp message preview here...
-
-The system will automatically extract:
-✓ Invoice Number
-✓ Serial Number
-✓ Purchase Date
-✓ Purchase Amount
-✓ Part Code
-✓ Receiver Phone Number`;
+    pdfFile.value = '';
   }
 
   function copyToClipboard() {
@@ -721,19 +675,17 @@ The system will automatically extract:
   }
 
   function sendWhatsApp() {
-    const phone = (storage.currentInvoice?.billMobileNumber || '').trim();
-    if(!phone) return;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(buildWhatsAppMessage())}`, '_blank');
+    const p = (storage.currentInvoice?.billMobileNumber || '').trim();
+    if (!p) return;
+    window.open(`https://wa.me/${p}?text=${encodeURIComponent(buildWhatsAppMessage())}`, '_blank');
   }
 
   window.addEventListener('load', () => {
-    document.getElementById('category').value = 'Everyone';
-    if(storage.currentInvoice) {
+    if (storage.currentInvoice) {
       populateForm(storage.currentInvoice);
       updatePreview();
     }
   });
 </script>
-
 </body>
 </html>
