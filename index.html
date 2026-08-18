@@ -384,15 +384,30 @@ The system will automatically extract:
     try {
       const buf = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument(buf).promise;
-      let fullText = '';
+
+      /* ── Collect raw items WITH positions ── */
+      let rawItems = [];
       for(let i = 1; i <= pdf.numPages; i++) {
         const page    = await pdf.getPage(i);
         const content = await page.getTextContent();
-        fullText += content.items.map(it => it.str).join(' ') + ' ';
+        rawItems = rawItems.concat(content.items);
       }
-      console.log('RAW:', fullText);
-      const extracted = extractInvoiceFields(fullText);
+
+      /* ── Build TWO versions of full text ── */
+      /* Version 1: space-joined (for most fields) */
+      const fullText = rawItems.map(it => it.str).join(' ');
+
+      /* Version 2: reconstruct WITH the # re-joined
+         PDF.js sometimes splits "C9LZ5PA#A" + "CJ" into two tokens
+         We merge adjacent tokens that look like a broken part code  */
+      const rejoined = rejoinPartCodeTokens(rawItems);
+
+      console.log('RAW TEXT:', fullText);
+      console.log('REJOINED:', rejoined);
+
+      const extracted = extractInvoiceFields(fullText, rejoined);
       console.log('EXTRACTED:', extracted);
+
       storage.currentInvoice = extracted;
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
@@ -405,9 +420,52 @@ The system will automatically extract:
   }
 
   /* ══════════════════════════════════════════════════════
+     REJOIN SPLIT PART-CODE TOKENS
+     
+     PDF.js splits "C9LZ5PA#ACJ" into tokens like:
+       ["C9LZ5PA#A", "CJ"]  OR  ["C9LZ5PA#", "ACJ"]
+     
+     This function detects a token ending with # or containing #
+     and merges it with the very next token if needed so we get
+     the complete "C9LZ5PA#ACJ" in the text stream.
+  ══════════════════════════════════════════════════════ */
+  function rejoinPartCodeTokens(items) {
+    const strs = items.map(it => it.str);
+    const out  = [];
+    let i = 0;
+    while(i < strs.length) {
+      const tok = strs[i];
+      /* Case 1: token ends with #  → merge with next token */
+      if(tok.match(/#$/) && i + 1 < strs.length) {
+        out.push(tok + strs[i+1]);
+        i += 2;
+        continue;
+      }
+      /* Case 2: token contains # but next token is pure letters
+         e.g. "C9LZ5PA#A" + "CJ"  → merge into "C9LZ5PA#ACJ"    */
+      if(tok.includes('#') && i + 1 < strs.length) {
+        const next = strs[i+1].trim();
+        if(/^[A-Z]{1,4}$/i.test(next)) {
+          out.push(tok + next);
+          i += 2;
+          continue;
+        }
+      }
+      out.push(tok);
+      i++;
+    }
+    return out.join(' ');
+  }
+
+  /* ══════════════════════════════════════════════════════
      EXTRACTION ENGINE
   ══════════════════════════════════════════════════════ */
-  function extractInvoiceFields(rawText) {
+  function extractInvoiceFields(text, rejoined) {
+
+    /* normalise both */
+    text     = text.replace(/\s+/g, ' ').trim();
+    rejoined = rejoined.replace(/\s+/g, ' ').trim();
+
     const data = {
       partnerState    : 'Maharashtra',
       partnerName     : 'Geonet It Mall Private Limited - Indira Chambers, Pune',
@@ -420,8 +478,6 @@ The system will automatically extract:
       billMobileNumber: '',
       redemptionLink  : document.getElementById('redemptionLink').value.trim()
     };
-
-    const text = rawText.replace(/\s+/g, ' ').trim();
 
     /* ── Invoice Number ── */
     const invM = text.match(/Invoice No\s*:\s*([A-Z0-9]+)/i);
@@ -438,13 +494,7 @@ The system will automatically extract:
     const amtM = text.match(/Total Amount\s*:\s*([\d,]+(?:\.\d{1,2})?)/i);
     if(amtM) data.purchaseAmount = amtM[1].replace(/,/g,'').trim();
 
-    /* ══════════════════════════════════════════════════════
-       PHONE NUMBER
-       PDF line: "Phone No. : 9921947406"
-       Strategy 1 — after "Details of Receiver" keyword
-       Strategy 2 — any Phone No. with Indian mobile
-       Strategy 3 — absolute fallback
-    ══════════════════════════════════════════════════════ */
+    /* ── Phone Number ── */
     const receiverIdx = text.search(/Details of Receiver/i);
     if(receiverIdx !== -1) {
       const slice  = text.slice(receiverIdx, receiverIdx + 1000);
@@ -462,89 +512,93 @@ The system will automatically extract:
     }
 
     /* ══════════════════════════════════════════════════════
-       PART CODE EXTRACTION — FIXED
+       PART CODE — DEFINITIVE FIX
        
-       PDF format: "C9LZ5PA#A  HP 15-fd1444TU"
-                    ─────────
-                    All alphanumeric before #
+       Invoice table row (SR. No = 1):
+       "1  C9LZ5PA#ACJ  HP 15-fd1444TU  5CD5377NJT , 84713010"
+            ───────
+            Item Code = C9LZ5PA  (everything BEFORE the #)
        
-       Rule: Extract everything alphanumeric BEFORE the # symbol
-       The # is followed by 1-3 characters (often letters like ACJ)
+       The PDF splits this as:
+         token1: "C9LZ5PA#A"
+         token2: "CJ"
        
-       Strategy:
-       1. Find pattern: [ALPHANUMERIC]#[ANYTHING]
-       2. Capture only the alphanumeric part before #
-       3. Match anywhere in text (not anchored to HP)
+       After rejoinPartCodeTokens() we have:
+         "C9LZ5PA#ACJ"
+       
+       Rule: find the FIRST occurrence of [ALPHANUMERIC]+#[A-Z]+
+       after "SR." or after the item row start marker "1 "
+       and extract everything BEFORE the #
     ══════════════════════════════════════════════════════ */
 
-    // Primary: Match any alphanumeric sequence followed by #
-    // This captures everything before the # including mixed case
-    const partMatch = text.match(/\b([A-Z0-9]+)#[A-Z]+\b/i);
-    if(partMatch) {
-      data.partCode = partMatch[1].toUpperCase();
-      console.log('✅ Part Code (primary):', data.partCode);
+    /* Strategy 1 — use rejoined text: find pattern after SR. row */
+    const srRowMatch = rejoined.match(
+      /SR\.?\s*(?:No\.?)?\s*\d+\s+([A-Z0-9]+)#[A-Z]+/i
+    );
+    if(srRowMatch) {
+      data.partCode = srRowMatch[1].toUpperCase();
+      console.log('✅ Part Code (SR row - rejoined):', data.partCode);
     }
 
-    // Fallback: Look specifically for the pattern before HP
-    // If the above didn't work, try anchored to HP
+    /* Strategy 2 — rejoined text: any [ALNUM]+#[LETTERS] near HP */
     if(!data.partCode) {
-      const partFallback = text.match(/\b([A-Z0-9]+)#[A-Z]+\s+HP\s+/i);
-      if(partFallback) {
-        data.partCode = partFallback[1].toUpperCase();
-        console.log('✅ Part Code (fallback - HP anchored):', data.partCode);
+      const nearHP = rejoined.match(/([A-Z0-9]{4,12})#[A-Z]+\s+HP\s+/i);
+      if(nearHP) {
+        data.partCode = nearHP[1].toUpperCase();
+        console.log('✅ Part Code (near HP - rejoined):', data.partCode);
+      }
+    }
+
+    /* Strategy 3 — rejoined text: very first [ALNUM]+#[LETTERS] in doc */
+    if(!data.partCode) {
+      const anyHash = rejoined.match(/\b([A-Z0-9]{4,12})#[A-Z]{1,5}\b/i);
+      if(anyHash) {
+        data.partCode = anyHash[1].toUpperCase();
+        console.log('✅ Part Code (first hash token - rejoined):', data.partCode);
+      }
+    }
+
+    /* Strategy 4 — plain text fallback (handles single-char suffix like #A) */
+    if(!data.partCode) {
+      const plainHash = text.match(/\b([A-Z0-9]{4,12})#[A-Z]{1,5}\b/i);
+      if(plainHash) {
+        data.partCode = plainHash[1].toUpperCase();
+        console.log('✅ Part Code (plain text fallback):', data.partCode);
       }
     }
 
     /* ══════════════════════════════════════════════════════
        SERIAL NUMBER
        
-       PDF row: "1 C9LZ5PA#A HP 15-fd1444TU  5CD5377NJT , 84713010"
+       Row: "1 C9LZ5PA#ACJ HP 15-fd1444TU  5CD5377NJT , 84713010"
        
-       Serial number rule:
-       ✦ Comes IMMEDIATELY after the HP model name
-       ✦ Is EXACTLY 10 characters
-       ✦ Is STRICTLY ALPHANUMERIC (letters + digits only)
-       ✦ Format like: 5CD5377NJT  (digits + letters mixed)
-       ✦ Must contain at LEAST 1 letter AND at LEAST 1 digit
-       ✦ Is followed by a space+comma OR just comma
+       Serial = strictly alphanumeric 10-char token
+       AFTER the HP model name, BEFORE the comma
     ══════════════════════════════════════════════════════ */
 
-    // Primary: HP model → serial → comma
-    const primarySerial = text.match(
-      /HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i
-    );
-    if(primarySerial) {
-      const candidate = primarySerial[1].toUpperCase();
-      if(isValidSerial(candidate)) {
-        data.serialNumber = candidate;
-        console.log('✅ Serial (primary):', data.serialNumber);
-      }
+    /* Primary: HP model → 10-char → comma */
+    const serialPrimary = rejoined.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
+    if(serialPrimary && isValidSerial(serialPrimary[1])) {
+      data.serialNumber = serialPrimary[1].toUpperCase();
+      console.log('✅ Serial (primary):', data.serialNumber);
     }
 
-    // Fallback A: Part code anchor → HP model → serial → comma
-    if(!data.serialNumber && data.partCode) {
-      const fbA = text.match(
-        new RegExp(`${data.partCode}#[A-Z]+\\s+HP\\s+[\\w\\-]+\\s+([A-Z0-9]{10})\\s*,`, 'i')
-      );
-      if(fbA) {
-        const candidate = fbA[1].toUpperCase();
-        if(isValidSerial(candidate)) {
-          data.serialNumber = candidate;
-          console.log('✅ Serial (fallback A - part code anchored):', data.serialNumber);
-        }
-      }
-    }
-
-    // Fallback B: Any 10-char with strong serial signature (≥3 letters + ≥3 digits)
+    /* Fallback A: plain text same pattern */
     if(!data.serialNumber) {
-      const all10 = [...text.matchAll(/\b([A-Z0-9]{10})\b/gi)];
-      for(const m of all10) {
-        const candidate = m[1].toUpperCase();
-        const letters = (candidate.match(/[A-Z]/g) || []).length;
-        const digits  = (candidate.match(/[0-9]/g) || []).length;
-        if(letters >= 3 && digits >= 3) {
-          data.serialNumber = candidate;
-          console.log('✅ Serial (fallback B - pattern match):', data.serialNumber);
+      const fbA = text.match(/HP\s+[\w\-]+\s+([A-Z0-9]{10})\s*,/i);
+      if(fbA && isValidSerial(fbA[1])) {
+        data.serialNumber = fbA[1].toUpperCase();
+        console.log('✅ Serial (fallback A):', data.serialNumber);
+      }
+    }
+
+    /* Fallback B: any 10-char with ≥3 letters + ≥3 digits */
+    if(!data.serialNumber) {
+      for(const m of text.matchAll(/\b([A-Z0-9]{10})\b/gi)) {
+        const u = m[1].toUpperCase();
+        if((u.match(/[A-Z]/g)||[]).length >= 3 && (u.match(/[0-9]/g)||[]).length >= 3) {
+          data.serialNumber = u;
+          console.log('✅ Serial (fallback B):', data.serialNumber);
           break;
         }
       }
@@ -553,12 +607,10 @@ The system will automatically extract:
     return data;
   }
 
-  /* ─── Serial validator: strictly alphanumeric, has both letters & digits ─── */
+  /* ─── Serial validator ─── */
   function isValidSerial(str) {
-    if(!/^[A-Z0-9]{10}$/.test(str)) return false;        // must be exactly 10 alphanumeric
-    if(!/[A-Z]/.test(str))           return false;        // must have at least 1 letter
-    if(!/[0-9]/.test(str))           return false;        // must have at least 1 digit
-    return true;
+    const u = str.toUpperCase();
+    return /^[A-Z0-9]{10}$/.test(u) && /[A-Z]/.test(u) && /[0-9]/.test(u);
   }
 
   /* ─── POPULATE FORM ─── */
