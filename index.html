@@ -563,19 +563,13 @@
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
       updatePreview();
-      showToast(`Extracted ${countExtractedFields(extracted)}/9 details`, 'success');
+      // Extraction notification removed as per user request
     } catch (err) {
       console.error('PDF processing error:', err);
       showToast('Failed to process PDF', 'error');
     } finally {
       document.getElementById('processingModal').classList.remove('active');
     }
-  }
-
-  function countExtractedFields(extracted) {
-    return Object.entries(extracted).filter(([key, value]) =>
-      value && !['partnerState', 'partnerName', 'category'].includes(key)
-    ).length;
   }
 
   function rejoinPartCodeTokens(items) {
