@@ -5,328 +5,395 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tax Invoice Extractor</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&display=swap');
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet"/>
 
+  <style>
     :root {
-      --white: #ffffff;
-      --bg: #f9fafb;
-      --border: #e5e7eb;
-      --text-primary: #111827;
-      --text-secondary: #4b5563;
-      --text-tertiary: #9ca3af;
-      --emerald-primary: #059669;
-      --emerald-hover: #047857;
-      --emerald-light: #ecfdf5;
-      --emerald-border: #10b981;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --em: #10b981;
+      --em-light: #d1fae5;
+      --em-bg: rgba(16, 185, 129, 0.08);
+      --glass: rgba(255, 255, 255, 0.62);
+      --glass-border: rgba(255, 255, 255, 0.72);
+      --blur: blur(14px);
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+      --radius: 16px;
+      --transition: all 0.2s ease;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: var(--bg);
-      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      color: #111827;
       min-height: 100vh;
-      padding: 40px 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+      padding: 0 16px 40px;
+      line-height: 1.5;
+      position: relative;
     }
 
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
 
     .header {
       text-align: center;
-      margin: -40px -16px 50px;
-      padding: 56px 24px 44px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
+      margin: -40px -16px 32px;
+      padding: 50px 24px 44px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
     }
-
     .header .logo {
-      font-family: 'Sora', sans-serif;
-      font-size: 12px;
-      letter-spacing: 4px;
-      color: var(--emerald-primary);
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      letter-spacing: 2px;
+      color: rgba(16, 185, 129, 0.7);
       text-transform: uppercase;
       margin-bottom: 14px;
-      display: block;
-      font-weight: 600;
+      font-weight: 500;
+      font-style: normal;
+      opacity: 0.9;
     }
-
     .header h1 {
       font-family: 'Playfair Display', serif;
-      font-variant: small-caps;
-      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
       font-weight: 700;
-      color: var(--emerald-primary);
-      letter-spacing: 0.5px;
-      margin-bottom: 20px;
-      line-height: 1.1;
+      color: var(--em);
+      letter-spacing: -1px;
+      margin-bottom: 18px;
+      line-height: 1.15;
     }
-
     .header .divider {
-      width: 64px;
+      width: 80px;
       height: 2px;
       margin: 0 auto;
-      background: linear-gradient(90deg, transparent, var(--emerald-border), transparent);
+      background: linear-gradient(90deg, transparent, var(--em), transparent);
     }
 
     .main-grid {
       display: grid;
-      grid-template-columns: 1.3fr 0.85fr;
-      gap: 30px;
-      align-items: start;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 24px;
     }
 
     .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 40px;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s ease;
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    .card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+      transform: translateY(-2px);
     }
 
-    .card:hover { box-shadow: var(--shadow-md); }
-
-    .card-title {
+    .section-label {
       font-family: 'Sora', sans-serif;
-      font-size: 12px;
-      letter-spacing: 2px;
-      color: var(--text-tertiary);
-      text-transform: uppercase;
-      margin-bottom: 28px;
-      display: block;
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--em);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-label::before {
+      content: '';
+      width: 20px;
+      height: 2px;
+      background: var(--em);
+      border-radius: 1px;
     }
 
     .upload-zone {
-      border: 2px dashed var(--emerald-border);
-      border-radius: 10px;
-      padding: 60px 24px;
+      border: 2px dashed var(--em);
+      border-radius: 12px;
+      padding: 40px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 35px;
-      background: var(--emerald-light);
+      transition: var(--transition);
+      margin-bottom: 24px;
+      background: var(--em-bg);
     }
-
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      background: #d1fae5;
-      border-color: var(--emerald-hover);
+    .upload-zone:hover, .upload-zone.dragover {
+      background: rgba(16, 185, 129, 0.13);
+      border-color: var(--em);
       transform: scale(1.01);
     }
-
     .upload-zone-text {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--emerald-hover);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--em);
       margin-bottom: 6px;
     }
-
     .upload-zone-hint {
-      font-size: 13px;
-      color: var(--text-secondary);
+      font-size: 12px;
+      color: #6b7280;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
-
     .form-group { display: flex; flex-direction: column; }
     .full-width { grid-column: 1 / -1; }
 
     .form-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
       text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
       font-family: 'Sora', sans-serif;
     }
 
     input, select {
       font-family: 'Inter', sans-serif;
       font-size: 14px;
-      color: var(--text-primary);
-      border: 1px solid var(--emerald-border);
-      border-radius: 8px;
-      padding: 12px;
+      color: #111827;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 11px 14px;
       outline: none;
-      transition: all 0.2s ease;
-      background: var(--white);
+      transition: var(--transition);
     }
-
     input:focus, select:focus {
-      border-color: var(--emerald-hover);
-      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      border-color: var(--em);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      background: rgba(255, 255, 255, 0.76);
     }
-
     input:disabled {
       background: #f3f4f6;
-      border-color: var(--border);
-      color: var(--text-tertiary);
+      border-color: #e5e7eb;
+      color: #9ca3af;
       cursor: not-allowed;
     }
 
     .display-value {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--emerald-primary);
-      padding: 10px 0;
-      font-family: 'Sora', sans-serif;
-    }
-
-    .button-group {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--em);
+      padding: 11px 14px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 10px;
+      min-height: 44px;
       display: flex;
-      gap: 16px;
-      margin-top: 35px;
+      align-items: center;
     }
-
-    button {
-      flex: 1;
-      font-family: 'Sora', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
+    .display-value.empty {
+      color: #9ca3af;
+      font-weight: 400;
     }
-
-    .btn-primary {
-      background: var(--emerald-primary);
-      color: var(--white);
-    }
-
-    .btn-primary:hover {
-      background: var(--emerald-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
-    }
-
-    .btn-secondary {
-      background: var(--white);
-      color: var(--emerald-primary);
-      border: 2px solid var(--emerald-primary);
-    }
-
-    .btn-secondary:hover { background: var(--emerald-light); }
 
     .phone-badge {
       display: inline-flex;
-      padding: 8px 14px;
-      background: var(--emerald-light);
-      border: 1px solid var(--emerald-border);
-      border-radius: 6px;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--em-bg);
+      border: 1px solid rgba(16, 185, 129, 0.24);
+      border-radius: 999px;
       font-size: 12px;
-      font-weight: 700;
-      color: var(--emerald-hover);
+      font-weight: 600;
+      color: var(--em);
       margin-bottom: 16px;
+    }
+    .phone-badge.active {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: var(--em);
     }
 
     .preview-area {
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      line-height: 1.8;
-      background: #fdfdfd;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 24px;
-      height: 440px;
+      line-height: 1.7;
+      color: #374151;
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      height: 380px;
       overflow-y: auto;
       white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+    .preview-area::-webkit-scrollbar { width: 6px; }
+    .preview-area::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.3);
+      border-radius: 3px;
+    }
+    .preview-area .placeholder-text {
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+    }
+    button {
+      flex: 1;
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+    .btn-primary {
+      background: var(--em);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+    }
+    .btn-secondary {
+      background: white;
+      color: var(--em);
+      border: 1px solid var(--em);
+    }
+    .btn-secondary:hover {
+      background: var(--em-light);
+    }
+    .btn-whatsapp {
+      background: var(--em);
+      color: white;
+    }
+    .btn-whatsapp:hover {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
     }
 
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      flex-direction: column;
     }
-
     .modal.active { display: flex; }
-
+    .modal-content {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: var(--blur);
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modal.active .modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
     .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid var(--white);
-      border-top-color: var(--emerald-primary);
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(16, 185, 129, 0.2);
+      border-top-color: var(--em);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin-bottom: 15px;
+      margin: 0 auto 12px;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-text { font-weight: 600; color: #111827; }
 
-    @media (max-width: 1024px) {
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      box-shadow: var(--shadow);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      z-index: 2000;
+      min-width: 200px;
+      opacity: 0;
+    }
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #111827;
+    }
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .toast-success .toast-icon {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--em);
+    }
+    .toast-error .toast-icon {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    .toast-info .toast-icon {
+      background: rgba(37, 211, 102, 0.2);
+      color: #25d366;
+    }
+    .toast-message {
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    @media (max-width: 900px) {
       .main-grid { grid-template-columns: 1fr; }
-      .card { padding: 30px; }
+      .card { padding: 20px; }
+      .toast {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+      }
     }
-
-
-    /* Smartphone + glassmorphism */
-    body {
-      background:
-        radial-gradient(circle at 15% 10%, rgba(16,185,129,.18), transparent 30%),
-        radial-gradient(circle at 90% 20%, rgba(6,182,212,.12), transparent 28%),
-        linear-gradient(135deg, #eefbf7 0%, #f7fafc 50%, #eef7f5 100%);
-    }
-    .header {
-      background: rgba(255,255,255,.55);
-      border: 1px solid rgba(255,255,255,.65);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 12px 35px rgba(15,23,42,.06);
-      border-radius: 0 0 24px 24px;
-    }
-    .card {
-      background: rgba(255,255,255,.62);
-      border: 1px solid rgba(255,255,255,.78);
-      box-shadow: 0 16px 45px rgba(15,23,42,.08);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      border-radius: 22px;
-    }
-    .upload-zone { background: rgba(236,253,245,.58); border-color: rgba(16,185,129,.65); border-radius: 18px; }
-    input, select, .preview-area {
-      background: rgba(255,255,255,.58);
-      border-color: rgba(16,185,129,.35);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    }
-    .phone-badge { background: rgba(236,253,245,.62); border-radius: 999px; }
-
     @media (max-width: 600px) {
-      body { padding: 12px; line-height: 1.45; }
-      .header { margin: -12px -12px 18px; padding: 30px 16px 24px; border-radius: 0 0 22px 22px; }
-      .header .logo { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 9px; }
-      .header h1 { font-size: 2rem; margin-bottom: 12px; }
-      .main-grid { display: flex; flex-direction: column; gap: 14px; }
-      .card { width: 100%; padding: 18px; border-radius: 20px; }
-      .card-title { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 16px; }
-      .upload-zone { padding: 38px 14px; margin-bottom: 22px; }
-      .upload-zone-text { font-size: 14px; }
-      .upload-zone-hint { font-size: 11px; }
-      .form-grid { grid-template-columns: 1fr; gap: 13px; margin-bottom: 18px; }
+      body { padding: 0 12px 32px; }
+      .header { margin: -12px -12px 20px; padding: 32px 16px 28px; }
+      .header .logo { font-size: 0.85rem; margin-bottom: 10px; }
+      .header h1 { font-size: 1.9rem; margin-bottom: 14px; }
+      .main-grid { gap: 16px; }
+      .card { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
       .full-width { grid-column: auto; }
-      .form-label { font-size: 10px; margin-bottom: 5px; }
-      input, select { width: 100%; min-height: 46px; font-size: 16px; border-radius: 12px; padding: 11px 12px; }
-      .display-value { padding: 10px 12px; min-height: 46px; display: flex; align-items: center; background: rgba(236,253,245,.55); border-radius: 12px; border: 1px solid rgba(16,185,129,.25); }
-      .button-group { flex-direction: column; gap: 10px; margin-top: 20px; }
-      button { width: 100%; min-height: 48px; border-radius: 13px; font-size: 12px; touch-action: manipulation; }
-      .preview-area { height: 330px; padding: 15px; font-size: 12px; border-radius: 14px; overflow-wrap: anywhere; }
-      .modal { padding: 20px; }
+      .upload-zone { padding: 32px 16px; }
+      .preview-area { height: 300px; }
+      .button-group { flex-direction: column; gap: 8px; }
+      button { width: 100%; }
+      .modal-content { padding: 24px; margin: 16px; }
     }
   </style>
 </head>
@@ -341,14 +408,14 @@
 
   <div class="main-grid">
     <div class="card">
-      <span class="card-title">01. Source File</span>
+      <div class="section-label">01. Source File</div>
       <div class="upload-zone" id="uploadZone">
         <div class="upload-zone-text">📄 DROP INVOICE HERE</div>
         <div class="upload-zone-hint">PDF Files Only • Auto-Extraction Enabled</div>
         <input type="file" id="pdfFile" accept="application/pdf" style="display: none;" />
       </div>
 
-      <span class="card-title">02. Data Review</span>
+      <div class="section-label">02. Data Review</div>
       <div class="form-grid">
         <div class="form-group full-width">
           <label class="form-label">Redemption Link</label>
@@ -391,7 +458,7 @@
         </div>
         <div class="form-group full-width">
           <label class="form-label">Receiver Phone</label>
-          <div class="display-value" id="billMobileNumberDisplay">—</div>
+          <div class="display-value empty" id="billMobileNumberDisplay">—</div>
         </div>
       </div>
 
@@ -402,11 +469,13 @@
     </div>
 
     <div class="card">
-      <span class="card-title">03. Message Preview</span>
+      <div class="section-label">03. Message Preview</div>
       <div class="phone-badge" id="detectedPhoneDisplay">📱 Waiting for PDF...</div>
-      <div class="preview-area" id="messagePreview">Complete the extraction to generate message...</div>
+      <div class="preview-area" id="messagePreview">
+        <span class="placeholder-text">Complete the extraction to generate message...</span>
+      </div>
       <div class="button-group">
-        <button class="btn-primary" onclick="sendWhatsApp()">Send On WhatsApp</button>
+        <button class="btn-whatsapp" onclick="sendWhatsApp()">Send On WhatsApp</button>
         <button class="btn-secondary" onclick="copyToClipboard()">Copy Text</button>
       </div>
     </div>
@@ -414,49 +483,64 @@
 </div>
 
 <div id="processingModal" class="modal">
-  <div class="spinner"></div>
-  <div style="color: white; font-weight: 600;">Processing Invoice Data...</div>
+  <div class="modal-content">
+    <div class="spinner"></div>
+    <div class="modal-text">Processing Invoice Data...</div>
+  </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  const storage = {
-    currentInvoice: JSON.parse(localStorage.getItem('currentInvoice')) || null
-  };
-
+  const storage = { currentInvoice: JSON.parse(localStorage.getItem('currentInvoice')) || null };
   const uploadZone = document.getElementById('uploadZone');
   const pdfFile = document.getElementById('pdfFile');
 
   uploadZone.addEventListener('click', () => pdfFile.click());
-
-  ['dragenter', 'dragover'].forEach(e =>
-    uploadZone.addEventListener(e, ev => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      uploadZone.classList.add('dragover');
-    })
-  );
-
-  ['dragleave', 'drop'].forEach(e =>
-    uploadZone.addEventListener(e, ev => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      uploadZone.classList.remove('dragover');
-    })
-  );
-
+  ['dragenter', 'dragover'].forEach(e => uploadZone.addEventListener(e, ev => {
+    ev.preventDefault(); ev.stopPropagation(); uploadZone.classList.add('dragover');
+  }));
+  ['dragleave', 'drop'].forEach(e => uploadZone.addEventListener(e, ev => {
+    ev.preventDefault(); ev.stopPropagation(); uploadZone.classList.remove('dragover');
+  }));
   uploadZone.addEventListener('drop', e => {
     const file = e.dataTransfer.files[0];
     if (file) handlePdfUpload(file);
   });
-
   pdfFile.addEventListener('change', e => {
     if (e.target.files[0]) handlePdfUpload(e.target.files[0]);
   });
 
+  let toastTimeout;
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast toast-${type} show`;
+    toast.innerHTML = `
+      <div class="toast-content">
+        <div class="toast-icon">${getToastIcon(type)}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+    `;
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function getToastIcon(type) {
+    switch(type) {
+      case 'success': return '✓';
+      case 'error': return '✗';
+      case 'info': return 'ℹ';
+      default: return 'ℹ';
+    }
+  }
+
   async function handlePdfUpload(file) {
-    if (!file || file.type !== 'application/pdf') return;
+    if (!file || file.type !== 'application/pdf') {
+      showToast('Please upload a valid PDF file.', 'error');
+      return;
+    }
 
     document.getElementById('processingModal').classList.add('active');
 
@@ -468,7 +552,7 @@
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        rawItems = rawItems.concat(content.items);
+        rawItems.push(...content.items);
       }
 
       const fullText = rawItems.map(it => it.str).join(' ');
@@ -479,27 +563,32 @@
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
       updatePreview();
+      showToast(`Extracted ${countExtractedFields(extracted)}/9 details`, 'success');
     } catch (err) {
-      console.error(err);
+      console.error('PDF processing error:', err);
+      showToast('Failed to process PDF', 'error');
     } finally {
       document.getElementById('processingModal').classList.remove('active');
     }
+  }
+
+  function countExtractedFields(extracted) {
+    return Object.entries(extracted).filter(([key, value]) =>
+      value && !['partnerState', 'partnerName', 'category'].includes(key)
+    ).length;
   }
 
   function rejoinPartCodeTokens(items) {
     const strs = items.map(it => it.str);
     const out = [];
     let i = 0;
-
     while (i < strs.length) {
       const tok = strs[i];
-
       if (tok.match(/#$/) && i + 1 < strs.length) {
         out.push(tok + strs[i + 1]);
         i += 2;
         continue;
       }
-
       if (tok.includes('#') && i + 1 < strs.length) {
         const next = strs[i + 1].trim();
         if (/^[A-Z]{1,4}$/i.test(next)) {
@@ -508,11 +597,9 @@
           continue;
         }
       }
-
       out.push(tok);
       i++;
     }
-
     return out.join(' ');
   }
 
@@ -545,20 +632,10 @@
     const amtM = text.match(/Total Amount\s*:\s*([\d,]+(?:\.\d{1,2})?)/i);
     if (amtM) data.purchaseAmount = amtM[1].replace(/,/g, '').trim();
 
-    /* PART CODE */
-    const pcM =
-      rejoined.match(/SR\.?\s*No\.?\s*1\s+([A-Z0-9]{4,20})#[A-Z]{1,5}/i) ||
-      rejoined.match(/\b([A-Z0-9]{4,20})#[A-Z]{1,5}\b/i);
+    const pcM = rejoined.match(/SR\.?\s*No\.?\s*1\s+([A-Z0-9]{4,20})#[A-Z]{1,5}/i) ||
+               rejoined.match(/\b([A-Z0-9]{4,20})#[A-Z]{1,5}\b/i);
     if (pcM) data.partCode = pcM[1].toUpperCase();
 
-    /* SERIAL NUMBER FIX
-       Rule:
-       - under SR. NO. 1 row
-       - in Name of Product/Service
-       - after model suffix TU, AU, QU, TX, AX
-       Example:
-       1 C9LZ5PA#ACJ HP 15-fd1444TU 5CD5377NJT , 84713010
-    */
     const suffixes = '(?:TU|AU|QU|TX|AX|LU|HU|SX|NX|WU|SU|XU|NU)';
     const serialPatterns = [
       new RegExp(`SR\\.?\\s*No\\.?\\s*1[\\s\\S]{0,250}?HP\\s+[\\w\\-\\/]*${suffixes}\\s+([A-Z0-9]{10})(?=\\s*,|\\s+\\d{6,})`, 'i'),
@@ -587,18 +664,11 @@
       }
     }
 
-    /* RECEIVER MOBILE NUMBER
-       Extract only from the Details of Receiver / Billed to block.
-       Never use the store/seller number as a fallback.
-    */
     let foundPhone = '';
     const receiverAnchor = /Details of Receiver\s*\|\s*Billed to/i.exec(text);
     if (receiverAnchor) {
       const sectionStart = receiverAnchor.index + receiverAnchor[0].length;
       const rest = text.slice(sectionStart);
-      // PDF.js may put the receiver and consignee headings together, while
-      // the receiver fields (including its phone) follow on later tokens.
-      // Use the second Name field as the receiver-block boundary.
       const nameMatches = [...rest.matchAll(/\bName\s*:/gi)];
       const receiverEnd = nameMatches.length > 1 ? nameMatches[1].index : -1;
       const section = receiverEnd >= 0 ? rest.slice(0, receiverEnd) : rest.slice(0, 1600);
@@ -615,8 +685,6 @@
       }
     }
 
-    // The seller/store number (e.g. 7774851338) is outside the receiver block.
-    // Do not use document-wide phone fallbacks because they can select it.
     data.billMobileNumber = (foundPhone && foundPhone !== '7774851338') ? '91' + foundPhone : '';
 
     return data;
@@ -639,9 +707,11 @@
 
     document.getElementById('billMobileNumberDisplay').textContent =
       d.billMobileNumber ? '📱 ' + d.billMobileNumber : '—';
+    document.getElementById('billMobileNumberDisplay').classList.toggle('empty', !d.billMobileNumber);
 
     document.getElementById('detectedPhoneDisplay').textContent =
       d.billMobileNumber ? '📱 ' + d.billMobileNumber : '📱 Waiting for PDF...';
+    document.getElementById('detectedPhoneDisplay').classList.toggle('active', !!d.billMobileNumber);
   }
 
   function formatDate(s) {
@@ -671,11 +741,16 @@ Purchase Amount: ${vals[5]}
 Product Serial Number: ${vals[6]}
 Invoice Number: ${vals[7]}
 Product Part Code: ${vals[8]}
-SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
+SKU: It Will Be Taken Automatically When Product Part Code Is Selected.
+
+Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function updatePreview() {
-    document.getElementById('messagePreview').textContent = buildWhatsAppMessage();
+    const hasContent = ['redemptionLink', 'partnerState', 'partnerName', 'category', 'purchaseDate', 'purchaseAmount', 'serialNumber', 'invoiceNumber', 'partCode']
+      .some(id => document.getElementById(id).value.trim());
+    document.getElementById('messagePreview').textContent = hasContent ? buildWhatsAppMessage() :
+      'Complete the extraction to generate message...';
   }
 
   function saveExtractedData() {
@@ -693,6 +768,7 @@ SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
     };
     localStorage.setItem('currentInvoice', JSON.stringify(storage.currentInvoice));
     updatePreview();
+    showToast('Changes saved successfully', 'success');
   }
 
   function clearForm() {
@@ -701,20 +777,27 @@ SKU: It Will Be Taken Automatically When Product Part Code Is Selected.`;
     });
     document.getElementById('category').value = 'Everyone';
     document.getElementById('billMobileNumberDisplay').textContent = '—';
+    document.getElementById('billMobileNumberDisplay').classList.add('empty');
     document.getElementById('detectedPhoneDisplay').textContent = '📱 Waiting for PDF...';
+    document.getElementById('detectedPhoneDisplay').classList.remove('active');
     document.getElementById('messagePreview').textContent = 'Complete the extraction to generate message...';
     storage.currentInvoice = null;
     localStorage.removeItem('currentInvoice');
     pdfFile.value = '';
+    showToast('Form reset', 'info');
   }
 
   function copyToClipboard() {
     navigator.clipboard.writeText(buildWhatsAppMessage());
+    showToast('Copied to clipboard', 'success');
   }
 
   function sendWhatsApp() {
     const p = (storage.currentInvoice?.billMobileNumber || '').trim();
-    if (!p) return;
+    if (!p) {
+      showToast('No phone number found in invoice', 'error');
+      return;
+    }
     window.open(`https://wa.me/${p}?text=${encodeURIComponent(buildWhatsAppMessage())}`, '_blank');
   }
 
