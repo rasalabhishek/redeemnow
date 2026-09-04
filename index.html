@@ -419,7 +419,7 @@
       <div class="form-grid">
         <div class="form-group full-width">
           <label class="form-label">Redemption Link</label>
-          <input type="text" id="redemptionLink" value="https://www.redeemnow.in/hpbtcnote2026" oninput="updatePreview()" />
+          <input type="text" id="redemptionLink" oninput="updatePreview()" />
         </div>
         <div class="form-group">
           <label class="form-label">Partner State</label>
@@ -438,7 +438,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Purchase Date</label>
-          <input type="date" id="purchaseDate" oninput="updatePreview()" />
+          <input type="date" id="purchaseDate" oninput="updateRedemptionLink(); updatePreview();" />
         </div>
         <div class="form-group">
           <label class="form-label">Invoice Number</label>
@@ -494,7 +494,6 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  // Don't load from localStorage on page load - always start fresh
   const storage = { currentInvoice: null };
   const uploadZone = document.getElementById('uploadZone');
   const pdfFile = document.getElementById('pdfFile');
@@ -537,6 +536,36 @@
     }
   }
 
+  // NEW FUNCTION: Determine redemption link based on purchase date
+  function getRedemptionLinkByDate(purchaseDateStr) {
+    if (!purchaseDateStr) return '';
+    
+    const date = new Date(purchaseDateStr + 'T00:00:00');
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    // July (7) or August (8)
+    if ((month === 7 || month === 8) && day >= 1 && day <= 31) {
+      return 'https://www.redeemnow.in/hpbtcnote2026';
+    }
+    // September (9), 1st to 30th
+    if (month === 9 && day >= 1 && day <= 30) {
+      return 'https://www.redeemnow.in/prefestive2026';
+    }
+    
+    return '';
+  }
+
+  // NEW FUNCTION: Update redemption link based on purchase date
+  function updateRedemptionLink() {
+    const purchaseDate = document.getElementById('purchaseDate').value;
+    const link = getRedemptionLinkByDate(purchaseDate);
+    
+    if (link) {
+      document.getElementById('redemptionLink').value = link;
+    }
+  }
+
   async function handlePdfUpload(file) {
     if (!file || file.type !== 'application/pdf') {
       showToast('Please upload a valid PDF file.', 'error');
@@ -563,6 +592,7 @@
       storage.currentInvoice = extracted;
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
+      updateRedemptionLink();
       updatePreview();
     } catch (err) {
       console.error('PDF processing error:', err);
@@ -611,7 +641,7 @@
       invoiceNumber: '',
       partCode: '',
       billMobileNumber: '',
-      redemptionLink: document.getElementById('redemptionLink').value.trim()
+      redemptionLink: ''
     };
 
     const invM = text.match(/Invoice No\s*:\s*([A-Z0-9\-\/]+)/i);
@@ -680,6 +710,9 @@
     }
 
     data.billMobileNumber = (foundPhone && foundPhone !== '7774851338') ? '91' + foundPhone : '';
+    
+    // Set redemption link based on purchase date
+    data.redemptionLink = getRedemptionLinkByDate(data.purchaseDate);
 
     return data;
   }
@@ -698,6 +731,7 @@
     document.getElementById('serialNumber').value = d.serialNumber || '';
     document.getElementById('invoiceNumber').value = d.invoiceNumber || '';
     document.getElementById('partCode').value = d.partCode || '';
+    document.getElementById('redemptionLink').value = d.redemptionLink || '';
 
     document.getElementById('billMobileNumberDisplay').textContent =
       d.billMobileNumber ? '📱 ' + d.billMobileNumber : '—';
@@ -741,7 +775,6 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function updatePreview() {
-    // Only generate message if there's extracted invoice data
     if (!storage.currentInvoice) {
       document.getElementById('messagePreview').textContent = 'Upload Tax Invoice To Generate Message...';
       return;
@@ -772,7 +805,7 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function clearForm() {
-    ['partnerState','partnerName','purchaseDate','purchaseAmount','serialNumber','invoiceNumber','partCode'].forEach(id => {
+    ['partnerState','partnerName','purchaseDate','purchaseAmount','serialNumber','invoiceNumber','partCode','redemptionLink'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('category').value = 'Everyone';
@@ -788,7 +821,6 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function copyToClipboard() {
-    // Don't allow copying if no invoice uploaded
     if (!storage.currentInvoice) {
       showToast('Upload a tax invoice first', 'error');
       return;
@@ -798,7 +830,6 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function sendWhatsApp() {
-    // Don't allow sending if no invoice uploaded
     if (!storage.currentInvoice) {
       showToast('Upload a tax invoice first', 'error');
       return;
@@ -812,7 +843,6 @@ Note: Fill Name Fields As Per Tax Invoice.`;
     window.open(`https://wa.me/${p}?text=${encodeURIComponent(buildWhatsAppMessage())}`, '_blank');
   }
 
-  // No longer load old data on page load - always start fresh
   window.addEventListener('load', () => {
     updatePreview();
   });
