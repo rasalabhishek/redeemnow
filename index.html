@@ -419,7 +419,7 @@
       <div class="form-grid">
         <div class="form-group full-width">
           <label class="form-label">Redemption Link</label>
-          <input type="text" id="redemptionLink" value="https://www.redeemnow.in/prefestive2026" oninput="updatePreview()" />
+          <input type="text" id="redemptionLink" value="https://www.redeemnow.in/hpbtcnote2026" oninput="updatePreview()" />
         </div>
         <div class="form-group">
           <label class="form-label">Partner State</label>
@@ -472,7 +472,7 @@
       <div class="section-label">03. Message Preview</div>
       <div class="phone-badge" id="detectedPhoneDisplay">📱 Waiting for PDF...</div>
       <div class="preview-area" id="messagePreview">
-        <span class="placeholder-text">Complete the extraction to generate message...</span>
+        <span class="placeholder-text">Upload Tax Invoice To Generate Message...</span>
       </div>
       <div class="button-group">
         <button class="btn-whatsapp" onclick="sendWhatsApp()">Send On WhatsApp</button>
@@ -494,7 +494,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  const storage = { currentInvoice: JSON.parse(localStorage.getItem('currentInvoice')) || null };
+  // Don't load from localStorage on page load - always start fresh
+  const storage = { currentInvoice: null };
   const uploadZone = document.getElementById('uploadZone');
   const pdfFile = document.getElementById('pdfFile');
 
@@ -563,7 +564,6 @@
       localStorage.setItem('currentInvoice', JSON.stringify(extracted));
       populateForm(extracted);
       updatePreview();
-      // Extraction notification removed as per user request
     } catch (err) {
       console.error('PDF processing error:', err);
       showToast('Failed to process PDF', 'error');
@@ -741,10 +741,16 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function updatePreview() {
+    // Only generate message if there's extracted invoice data
+    if (!storage.currentInvoice) {
+      document.getElementById('messagePreview').textContent = 'Upload Tax Invoice To Generate Message...';
+      return;
+    }
+    
     const hasContent = ['redemptionLink', 'partnerState', 'partnerName', 'category', 'purchaseDate', 'purchaseAmount', 'serialNumber', 'invoiceNumber', 'partCode']
       .some(id => document.getElementById(id).value.trim());
     document.getElementById('messagePreview').textContent = hasContent ? buildWhatsAppMessage() :
-      'Complete the extraction to generate message...';
+      'Upload Tax Invoice To Generate Message...';
   }
 
   function saveExtractedData() {
@@ -774,7 +780,7 @@ Note: Fill Name Fields As Per Tax Invoice.`;
     document.getElementById('billMobileNumberDisplay').classList.add('empty');
     document.getElementById('detectedPhoneDisplay').textContent = '📱 Waiting for PDF...';
     document.getElementById('detectedPhoneDisplay').classList.remove('active');
-    document.getElementById('messagePreview').textContent = 'Complete the extraction to generate message...';
+    document.getElementById('messagePreview').textContent = 'Upload Tax Invoice To Generate Message...';
     storage.currentInvoice = null;
     localStorage.removeItem('currentInvoice');
     pdfFile.value = '';
@@ -782,11 +788,22 @@ Note: Fill Name Fields As Per Tax Invoice.`;
   }
 
   function copyToClipboard() {
+    // Don't allow copying if no invoice uploaded
+    if (!storage.currentInvoice) {
+      showToast('Upload a tax invoice first', 'error');
+      return;
+    }
     navigator.clipboard.writeText(buildWhatsAppMessage());
     showToast('Copied to clipboard', 'success');
   }
 
   function sendWhatsApp() {
+    // Don't allow sending if no invoice uploaded
+    if (!storage.currentInvoice) {
+      showToast('Upload a tax invoice first', 'error');
+      return;
+    }
+    
     const p = (storage.currentInvoice?.billMobileNumber || '').trim();
     if (!p) {
       showToast('No phone number found in invoice', 'error');
@@ -795,11 +812,9 @@ Note: Fill Name Fields As Per Tax Invoice.`;
     window.open(`https://wa.me/${p}?text=${encodeURIComponent(buildWhatsAppMessage())}`, '_blank');
   }
 
+  // No longer load old data on page load - always start fresh
   window.addEventListener('load', () => {
-    if (storage.currentInvoice) {
-      populateForm(storage.currentInvoice);
-      updatePreview();
-    }
+    updatePreview();
   });
 </script>
 </body>
